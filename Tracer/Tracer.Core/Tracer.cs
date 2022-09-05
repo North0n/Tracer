@@ -20,7 +20,7 @@ public class Tracer : ITracer
         var info = new MethodInfo(methodName, className, 0);
 
         _traceResult.GetOrAdd(threadId, _ => new RunningThreadInfo()).RunningMethods.Push(info);
-        _stopwatches.GetOrAdd(threadId, new Stack<Stopwatch>());
+        _stopwatches.GetOrAdd(threadId, new ConcurrentStack<Stopwatch>());
         // Place method info into right place
         var parentMethod = _traceResult[threadId].Methods;
         for (var i = 0; i < _stopwatches[threadId].Count; ++i)
@@ -38,8 +38,12 @@ public class Tracer : ITracer
     public void StopTrace()
     {
         var threadId = Environment.CurrentManagedThreadId;
-        _stopwatches[threadId].Peek().Stop();
-        _traceResult[threadId].RunningMethods.Pop().Milliseconds = _stopwatches[threadId].Pop().ElapsedMilliseconds; 
+        if (!_stopwatches[threadId].TryPop(out var stopwatch)) 
+            return;
+        stopwatch.Stop();
+        if (!_traceResult[threadId].RunningMethods.TryPop(out var methodInfo)) 
+            return;
+        methodInfo.Milliseconds = stopwatch.ElapsedMilliseconds;
     }
 
     public TraceResult GetTraceResult()
@@ -50,9 +54,9 @@ public class Tracer : ITracer
     private class RunningThreadInfo
     {
         public List<MethodInfo> Methods { get; set; } = new();
-        public Stack<MethodInfo> RunningMethods { get; set; } = new();
+        public ConcurrentStack<MethodInfo> RunningMethods { get; set; } = new();
     }
     
     private readonly ConcurrentDictionary<int, RunningThreadInfo> _traceResult = new();
-    private readonly ConcurrentDictionary<int, Stack<Stopwatch>> _stopwatches = new();
+    private readonly ConcurrentDictionary<int, ConcurrentStack<Stopwatch>> _stopwatches = new();
 }
