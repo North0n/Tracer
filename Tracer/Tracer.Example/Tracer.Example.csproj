@@ -12,4 +12,8 @@
       <ProjectReference Include="..\Tracer.Serialization.Abstractions\Tracer.Serialization.Abstractions.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="YamlDotNet" Version="12.0.0" />
+    </ItemGroup>
+
 </Project>
