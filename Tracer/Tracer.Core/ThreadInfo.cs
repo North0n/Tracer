@@ -11,6 +11,7 @@ public class ThreadInfo
     
     public int Id { get; }
     internal long Milliseconds { get; }
+    // TODO: Store just long Milliseconds and do this transformation in the serializer class
     public string Time => $"{Milliseconds}ms";
     public IReadOnlyList<MethodInfo> Methods { get; }
 }

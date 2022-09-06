@@ -1,19 +1,14 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Xml.Serialization;
 using Tracer.Core;
 using Tracer.Serialization.Abstractions;
-using MethodInfo = Tracer.Core.MethodInfo;
-using System;
 using static System.Threading.Thread;
 
 namespace Tracer.Example
 {
     public class Foo
     {
-        private Bar _bar;
-        private ITracer _tracer;
+        private readonly Bar _bar;
+        private readonly ITracer _tracer;
 
         internal Foo(ITracer tracer)
         {
@@ -40,7 +35,7 @@ namespace Tracer.Example
 
     public class Bar
     {
-        private ITracer _tracer;
+        private readonly ITracer _tracer;
 
         internal Bar(ITracer tracer)
         {
@@ -65,14 +60,14 @@ namespace Tracer.Example
             Console.WriteLine(Environment.CurrentManagedThreadId);
         }
 
-        public static void InnerMethod()
+        private static void InnerMethod()
         {
         }
     }
 
     public static class Program
     {
-        private static async Task Main(string[] args)
+        private static async Task Main()
         {
             await Poo.MyMethod();
             var tracer = new Tracer.Core.Tracer();
@@ -83,6 +78,7 @@ namespace Tracer.Example
             task.Wait();
             var result = tracer.GetTraceResult();
 
+            // TODO: replace with default foreach
             Directory.EnumerateFiles("TraceResultSerializers", "*.dll").ToList().ForEach(file =>
             {
                 var serializerAssembly = Assembly.LoadFrom(file);
@@ -92,6 +88,7 @@ namespace Tracer.Example
                 
                 var extension = file.AsSpan(file.LastIndexOf('.') + 1, file.Length - file.LastIndexOf('.') - 1);
                 var serializerName = $"{file}.{extension}Serializer";
+                // TODO: replace with GetTypes. And among this types find those, which implement ITraceResultSerializer
                 var serializerType = serializerAssembly.GetType(serializerName);
                 if (serializerType == null)
                 {

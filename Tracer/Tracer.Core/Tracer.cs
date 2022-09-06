@@ -13,7 +13,6 @@ public class Tracer : ITracer
         // Collect method info
         // GetFrame(0) - this method
         // GetFrame(1) - method to measure
-        // TODO: deal with !, ? and nulls
         var method = stackTrace.GetFrame(1)!.GetMethod();
         var methodName = method!.Name;
         var className = method.DeclaringType!.Name;
@@ -22,6 +21,7 @@ public class Tracer : ITracer
         _traceResult.GetOrAdd(threadId, _ => new RunningThreadInfo()).RunningMethods.Push(info);
         _stopwatches.GetOrAdd(threadId, new Stack<Stopwatch>());
         // Place method info into right place
+        // TODO: Just peek element from stack instead of this shit
         var parentMethod = _traceResult[threadId].Methods;
         for (var i = 0; i < _stopwatches[threadId].Count; ++i)
         {
@@ -53,6 +53,7 @@ public class Tracer : ITracer
         public Stack<MethodInfo> RunningMethods { get; set; } = new();
     }
     
+    // TODO: remove one dictionary
     private readonly ConcurrentDictionary<int, RunningThreadInfo> _traceResult = new();
     private readonly ConcurrentDictionary<int, Stack<Stopwatch>> _stopwatches = new();
 }
