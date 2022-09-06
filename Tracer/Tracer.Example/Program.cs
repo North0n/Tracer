@@ -6,6 +6,7 @@ using Tracer.Core;
 using Tracer.Serialization.Abstractions;
 using MethodInfo = Tracer.Core.MethodInfo;
 using System;
+using static System.Threading.Thread;
 
 namespace Tracer.Example
 {
@@ -23,7 +24,7 @@ namespace Tracer.Example
         public void MyMethod()
         {
             _tracer.StartTrace();
-            Thread.Sleep(100);
+            Sleep(100);
             _bar.InnerMethod();
             PrivateMethod();
             _tracer.StopTrace();
@@ -32,7 +33,7 @@ namespace Tracer.Example
         private void PrivateMethod()
         {
             _tracer.StartTrace();
-            Thread.Sleep(105);
+            Sleep(105);
             _tracer.StopTrace();
         }
     }
@@ -49,15 +50,31 @@ namespace Tracer.Example
         public void InnerMethod()
         {
             _tracer.StartTrace();
-            Thread.Sleep(200);
+            Sleep(200);
             _tracer.StopTrace();
+        }
+    }
+
+    public static class Poo
+    {
+        public static async Task MyMethod()
+        {
+            Console.WriteLine(Environment.CurrentManagedThreadId);
+            var task = Task.Run(InnerMethod);
+            await task;
+            Console.WriteLine(Environment.CurrentManagedThreadId);
+        }
+
+        public static void InnerMethod()
+        {
         }
     }
 
     public static class Program
     {
-        private static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
+            await Poo.MyMethod();
             var tracer = new Tracer.Core.Tracer();
             var foo = new Foo(tracer);
             var task = Task.Run(() => foo.MyMethod());
