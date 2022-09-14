@@ -18,17 +18,19 @@ public class Tracer : ITracer
         var className = method.DeclaringType!.Name;
         var info = new MethodInfo(methodName, className, 0);
 
-        _traceResult.GetOrAdd(threadId, _ => new RunningThreadInfo()).RunningMethods.Push(info);
+        _traceResult.GetOrAdd(threadId, _ => new RunningThreadInfo());
         _stopwatches.GetOrAdd(threadId, new Stack<Stopwatch>());
         // Place method info into right place
-        // TODO: Just peek element from stack instead of this shit
-        var parentMethod = _traceResult[threadId].Methods;
-        for (var i = 0; i < _stopwatches[threadId].Count; ++i)
+        if (_traceResult[threadId].RunningMethods.Count == 0)
         {
-            parentMethod = parentMethod.Last().Methods;
+            _traceResult[threadId].Methods.Add(info);
         }
-        parentMethod.Add(info);
-        
+        else
+        {
+            _traceResult[threadId].RunningMethods.Peek().Methods.Add(info);
+        }
+        _traceResult[threadId].RunningMethods.Push(info);
+
         // Start time measurement
         var stopwatch = new Stopwatch();
         stopwatch.Start();
