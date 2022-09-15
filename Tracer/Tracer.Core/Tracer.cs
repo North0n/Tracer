@@ -5,6 +5,20 @@ namespace Tracer.Core;
 
 public class Tracer : ITracer
 {
+    private class MethodTrace
+    {
+        public MethodTrace(string name, string className)
+        {
+            Name = name;
+            Class = className;
+        }
+
+        public string Name { get; }
+        public string Class { get; }
+        public Stopwatch Stopwatch { get; } = new();
+        public List<MethodTrace> Methods { get; } = new();
+    }
+
     public void StartTrace()
     {
         var threadId = Environment.CurrentManagedThreadId;
@@ -16,10 +30,9 @@ public class Tracer : ITracer
         var method = stackTrace.GetFrame(1)!.GetMethod();
         var methodName = method!.Name;
         var className = method.DeclaringType!.Name;
-        var info = new MethodInfo(methodName, className, 0);
+        var info = new MethodTrace(methodName, className);
 
         _traceResult.GetOrAdd(threadId, _ => new RunningThreadInfo());
-        _stopwatches.GetOrAdd(threadId, new Stack<Stopwatch>());
         // Place method info into right place
         if (_traceResult[threadId].RunningMethods.Count == 0)
         {
@@ -32,30 +45,28 @@ public class Tracer : ITracer
         _traceResult[threadId].RunningMethods.Push(info);
 
         // Start time measurement
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
-        _stopwatches[threadId].Push(stopwatch);
+        _traceResult[threadId].RunningMethods.Peek().Stopwatch.Start();
     }
 
     public void StopTrace()
     {
         var threadId = Environment.CurrentManagedThreadId;
-        _stopwatches[threadId].Peek().Stop();
-        _traceResult[threadId].RunningMethods.Pop().Milliseconds = _stopwatches[threadId].Pop().ElapsedMilliseconds; 
+        _traceResult[threadId].RunningMethods.Pop().Stopwatch.Stop();
     }
 
     public TraceResult GetTraceResult()
     {
-        return new TraceResult(_traceResult.Select(info => new ThreadInfo(info.Value.Methods, info.Key)).ToList());
+        return new TraceResult(_traceResult.Select(info =>
+            new ThreadInfo(
+                info.Value.Methods.Select(m => new MethodInfo(m.Name, m.Class, m.Stopwatch.ElapsedMilliseconds))
+                    .ToList(), info.Key)).ToList());
     }
 
     private class RunningThreadInfo
     {
-        public List<MethodInfo> Methods { get; set; } = new();
-        public Stack<MethodInfo> RunningMethods { get; set; } = new();
+        public List<MethodTrace> Methods { get; set; } = new();
+        public Stack<MethodTrace> RunningMethods { get; set; } = new();
     }
     
-    // TODO: remove one dictionary
     private readonly ConcurrentDictionary<int, RunningThreadInfo> _traceResult = new();
-    private readonly ConcurrentDictionary<int, Stack<Stopwatch>> _stopwatches = new();
 }
