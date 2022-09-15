@@ -62,30 +62,24 @@ namespace Tracer.Example
             task.Wait();
             var result = tracer.GetTraceResult();
 
-            // TODO: replace with default foreach
-            Directory.EnumerateFiles("TraceResultSerializers", "*.dll").ToList().ForEach(file =>
+            var files = Directory.EnumerateFiles("TraceResultSerializers", "*.dll");
+            foreach (var file in files)
             {
                 var serializerAssembly = Assembly.LoadFrom(file);
-                // Get file name without extension
-                file = file.Substring(file.LastIndexOf('\\') + 1, file.Length - file.LastIndexOf('\\') - 1);
-                file = file[..file.LastIndexOf('.')];
-                
-                var extension = file.AsSpan(file.LastIndexOf('.') + 1, file.Length - file.LastIndexOf('.') - 1);
-                var serializerName = $"{file}.{extension}Serializer";
-                // TODO: replace with GetTypes. And among this types find those, which implement ITraceResultSerializer
-                var serializerType = serializerAssembly.GetType(serializerName);
-                if (serializerType == null)
+                var types = serializerAssembly.GetTypes();
+                foreach (var type in types)
                 {
-                    throw new Exception($"Serializer {serializerName} not found");
+                    if (type.GetInterface(nameof(ITraceResultSerializer)) == null) 
+                        continue;
+                    var serializer = (ITraceResultSerializer?)Activator.CreateInstance(type);
+                    if (serializer == null)
+                    {
+                        throw new Exception($"Serializer {type.ToString()} not created");
+                    }
+                    using var fileStream = new FileStream($"result.{serializer.Extension}", FileMode.Create);
+                    serializer.Serialize(result, fileStream);
                 }
-                var serializer = (ITraceResultSerializer?)Activator.CreateInstance(serializerType);
-                if (serializer == null)
-                {
-                    throw new Exception($"Serializer {serializerName} not created");
-                }
-                using var fileStream = new FileStream($"result.{extension}", FileMode.Create);
-                serializer.Serialize(result, fileStream);
-            });
+            }
         }
     }
 }
