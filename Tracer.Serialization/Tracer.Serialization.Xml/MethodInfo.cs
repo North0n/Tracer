@@ -25,6 +25,6 @@ public class MethodInfo
     public string Class { get; set; } = "";
 
     [XmlAttribute(Form = XmlSchemaForm.Unqualified)]
-    public string Time { get; } = "";
+    public string Time { get; set; } = "";
     public List<MethodInfo> Methods { get; } = new();
 }

@@ -20,7 +20,7 @@ public class ThreadInfo
     public int Id { get; set; } = -1;
 
     [XmlAttribute(Form = XmlSchemaForm.Unqualified)]
-    public string Time { get; } = "";
+    public string Time { get; set; } = "";
 
     [XmlArray()]
     public List<MethodInfo> Methods { get; } = new();
