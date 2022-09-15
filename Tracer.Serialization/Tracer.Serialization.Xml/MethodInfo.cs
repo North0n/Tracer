@@ -14,7 +14,7 @@ public class MethodInfo
     {
         Class = methodInfo.Class;
         Name = methodInfo.Name;
-        Time = methodInfo.Time;
+        Time = $"{methodInfo.Milliseconds}ms";
         Methods = new List<MethodInfo>(methodInfo.Methods.Select(m => new MethodInfo(m)));
     }
     
@@ -25,6 +25,6 @@ public class MethodInfo
     public string Class { get; set; } = "";
 
     [XmlAttribute(Form = XmlSchemaForm.Unqualified)]
-    public string Time { get; set; } = "";
+    public string Time { get; } = "";
     public List<MethodInfo> Methods { get; } = new();
 }

@@ -11,7 +11,6 @@ public class MethodInfo
 
     public string Name { get; }
     public string Class { get; }
-    // TODO: Store just long Milliseconds and do this transformation in the serializer class
     public long Milliseconds { get; }
     public IReadOnlyList<MethodInfo> Methods { get; } = new List<MethodInfo>();
 }

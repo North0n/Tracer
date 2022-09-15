@@ -9,4 +9,6 @@ public class XmlSerializer : ITraceResultSerializer
         var xmlSerializer = new System.Xml.Serialization.XmlSerializer(typeof(TraceResult));
         xmlSerializer.Serialize(to, new TraceResult(traceResult));
     }
+
+    public string Extension { get; } = "Xml";
 }

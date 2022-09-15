@@ -12,7 +12,7 @@ public class ThreadInfo
     public ThreadInfo(Core.ThreadInfo threadInfo)
     {
         Id = threadInfo.Id;
-        Time = threadInfo.Time;
+        Time = $"{threadInfo.Milliseconds}ms";
         Methods = new List<MethodInfo>(threadInfo.Methods.Select(m => new MethodInfo(m)));
     }
 
@@ -20,7 +20,7 @@ public class ThreadInfo
     public int Id { get; set; } = -1;
 
     [XmlAttribute(Form = XmlSchemaForm.Unqualified)]
-    public string Time { get; set; } = "";
+    public string Time { get; } = "";
 
     [XmlArray()]
     public List<MethodInfo> Methods { get; } = new();
