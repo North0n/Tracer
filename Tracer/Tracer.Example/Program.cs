@@ -50,26 +50,10 @@ namespace Tracer.Example
         }
     }
 
-    public static class Poo
-    {
-        public static async Task MyMethod()
-        {
-            Console.WriteLine(Environment.CurrentManagedThreadId);
-            var task = Task.Run(InnerMethod);
-            await task;
-            Console.WriteLine(Environment.CurrentManagedThreadId);
-        }
-
-        private static void InnerMethod()
-        {
-        }
-    }
-
     public static class Program
     {
-        private static async Task Main()
+        private static void Main()
         {
-            await Poo.MyMethod();
             var tracer = new Tracer.Core.Tracer();
             var foo = new Foo(tracer);
             var task = Task.Run(() => foo.MyMethod());

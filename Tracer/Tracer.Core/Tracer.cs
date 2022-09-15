@@ -19,6 +19,11 @@ public class Tracer : ITracer
         public List<MethodTrace> Methods { get; } = new();
     }
 
+    private static List<MethodInfo> ConvertMethods(List<MethodTrace> methods)
+    {
+        return methods.Select(method => new MethodInfo(method.Name, method.Class, method.Stopwatch.ElapsedMilliseconds, ConvertMethods(method.Methods))).ToList();
+    }
+
     public void StartTrace()
     {
         var threadId = Environment.CurrentManagedThreadId;
@@ -58,14 +63,14 @@ public class Tracer : ITracer
     {
         return new TraceResult(_traceResult.Select(info =>
             new ThreadInfo(
-                info.Value.Methods.Select(m => new MethodInfo(m.Name, m.Class, m.Stopwatch.ElapsedMilliseconds))
+                info.Value.Methods.Select(m => new MethodInfo(m.Name, m.Class, m.Stopwatch.ElapsedMilliseconds, ConvertMethods(m.Methods)))
                     .ToList(), info.Key)).ToList());
     }
 
     private class RunningThreadInfo
     {
-        public List<MethodTrace> Methods { get; set; } = new();
-        public Stack<MethodTrace> RunningMethods { get; set; } = new();
+        public List<MethodTrace> Methods { get; } = new();
+        public Stack<MethodTrace> RunningMethods { get; } = new();
     }
     
     private readonly ConcurrentDictionary<int, RunningThreadInfo> _traceResult = new();
