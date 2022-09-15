@@ -14,7 +14,7 @@ public class MethodInfo
     {
         Class = methodInfo.Class;
         Name = methodInfo.Name;
-        Time = methodInfo.Time;
+        Time = $"{methodInfo.Milliseconds}ms";
         Methods = new List<MethodInfo>(methodInfo.Methods.Select(m => new MethodInfo(m)));
     }
     

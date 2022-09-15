@@ -42,6 +42,14 @@ public class Tests
         {
             _tracer.StartTrace();
             Thread.Sleep(200);
+            PrivateMethod();
+            _tracer.StopTrace();
+        }
+
+        private void PrivateMethod()
+        {
+            _tracer.StartTrace();
+            Thread.Sleep(200);
             _tracer.StopTrace();
         }
     }
@@ -66,13 +74,20 @@ public class Tests
         
         Assert.That(result.Threads, Has.Count.EqualTo(1));
         Assert.That(result.Threads[0].Methods, Has.Count.EqualTo(1));
-        Assert.That(result.Threads[0].Methods[0].Methods, Has.Count.EqualTo(0));
         Assert.Multiple(() =>
         {
             Assert.That(result.Threads[0].Methods[0].Name, Is.EqualTo("InnerMethod"));
             Assert.That(result.Threads[0].Methods[0].Class, Is.EqualTo("Bar"));
-            Assert.That(GetMillisecondsValue(result.Threads[0].Methods[0].Time), Is.GreaterThanOrEqualTo(200));
+            Assert.That(result.Threads[0].Methods[0].Milliseconds, Is.GreaterThanOrEqualTo(400));
         });
+        Assert.That(result.Threads[0].Methods[0].Methods, Has.Count.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Threads[0].Methods[0].Methods[0].Name, Is.EqualTo("PrivateMethod"));
+            Assert.That(result.Threads[0].Methods[0].Methods[0].Class, Is.EqualTo("Bar"));
+            Assert.That(result.Threads[0].Methods[0].Methods[0].Milliseconds, Is.GreaterThanOrEqualTo(200));
+        });
+        Assert.That(result.Threads[0].Methods[0].Methods[0].Methods, Has.Count.EqualTo(0));
     }
 
     [Test]
@@ -86,13 +101,20 @@ public class Tests
         
         Assert.That(result.Threads, Has.Count.EqualTo(2));
         Assert.That(result.Threads[0].Methods, Has.Count.EqualTo(1));
-        Assert.That(result.Threads[0].Methods[0].Methods, Has.Count.EqualTo(0));
         Assert.Multiple(() =>
         {
             Assert.That(result.Threads[0].Methods[0].Name, Is.EqualTo("InnerMethod"));
             Assert.That(result.Threads[0].Methods[0].Class, Is.EqualTo("Bar"));
-            Assert.That(GetMillisecondsValue(result.Threads[0].Methods[0].Time), Is.GreaterThanOrEqualTo(200));
+            Assert.That(result.Threads[0].Methods[0].Milliseconds, Is.GreaterThanOrEqualTo(400));
         });
+        Assert.That(result.Threads[0].Methods[0].Methods, Has.Count.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Threads[0].Methods[0].Methods[0].Name, Is.EqualTo("PrivateMethod"));
+            Assert.That(result.Threads[0].Methods[0].Methods[0].Class, Is.EqualTo("Bar"));
+            Assert.That(result.Threads[0].Methods[0].Methods[0].Milliseconds, Is.GreaterThanOrEqualTo(200));
+        });
+        Assert.That(result.Threads[0].Methods[0].Methods[0].Methods, Has.Count.EqualTo(0));
         
         Assert.That(result.Threads[1].Methods, Has.Count.EqualTo(2));
         Assert.That(result.Threads[1].Methods[0].Methods, Has.Count.EqualTo(0));
@@ -100,7 +122,7 @@ public class Tests
         {
             Assert.That(result.Threads[1].Methods[0].Name, Is.EqualTo("MethodWithNoNested"));
             Assert.That(result.Threads[1].Methods[0].Class, Is.EqualTo("Foo"));
-            Assert.That(GetMillisecondsValue(result.Threads[1].Methods[0].Time), Is.GreaterThanOrEqualTo(105));
+            Assert.That(result.Threads[1].Methods[0].Milliseconds, Is.GreaterThanOrEqualTo(105));
         });
         
         Assert.That(result.Threads[1].Methods[1].Methods, Has.Count.EqualTo(0));
@@ -108,7 +130,7 @@ public class Tests
         {
             Assert.That(result.Threads[1].Methods[1].Name, Is.EqualTo("MyMethod"));
             Assert.That(result.Threads[1].Methods[1].Class, Is.EqualTo("Foo"));
-            Assert.That(GetMillisecondsValue(result.Threads[1].Methods[1].Time), Is.GreaterThanOrEqualTo(300));
+            Assert.That(result.Threads[1].Methods[1].Milliseconds, Is.GreaterThanOrEqualTo(300));
         });
     }
 }

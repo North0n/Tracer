@@ -10,7 +10,6 @@ public class ThreadInfo
     }
     
     public int Id { get; }
-    internal long Milliseconds { get; }
-    public string Time => $"{Milliseconds}ms";
+    public long Milliseconds { get; }
     public IReadOnlyList<MethodInfo> Methods { get; }
 }

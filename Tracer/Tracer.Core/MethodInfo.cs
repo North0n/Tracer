@@ -2,16 +2,16 @@
 
 public class MethodInfo
 {
-    public MethodInfo(string name, string @class, int ms)
+    public MethodInfo(string name, string className, long ms, IReadOnlyList<MethodInfo> methods)
     {
         Name = name;
-        Class = @class;
+        Class = className;
         Milliseconds = ms;
+        Methods = methods;
     }
 
     public string Name { get; }
     public string Class { get; }
-    internal long Milliseconds { get; set; }
-    public string Time => $"{Milliseconds}ms";
-    public List<MethodInfo> Methods { get; } = new();
+    public long Milliseconds { get; }
+    public IReadOnlyList<MethodInfo> Methods { get; }
 }
